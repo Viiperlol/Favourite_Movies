@@ -85,6 +85,7 @@ def home():
     all_movies = result.scalars().all()
     return render_template("index.html", movies=all_movies)
 
+
 @app.route("/edit", methods=["GET", "POST"])
 def edit():
     form = RateMovieForm()
@@ -100,6 +101,7 @@ def edit():
         return redirect(url_for('home'))
     return render_template("edit.html", form=form)
 
+
 @app.route("/delete", methods=["GET", "POST"])
 def delete():
     movie_id = int(request.args.get("id"))
@@ -109,9 +111,11 @@ def delete():
         db.session.commit()
     return redirect(url_for('home'))
 
+
 @app.route("/add", methods=["GET", "POST"])
 def add():
     return render_template("add.html")
+
 
 if __name__ == '__main__':
     app.run(debug=True)
