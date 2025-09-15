@@ -41,6 +41,7 @@ class RateMovieForm(FlaskForm):
     new_review = StringField("Your review")
     submit = SubmitField("Submit", validators=[DataRequired()])
 
+# ----- SAMPLE DB DATA -----
 # new_movie = Movie(
 #     title="Oppenheimer",
 #     year=2023,
