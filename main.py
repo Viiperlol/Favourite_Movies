@@ -16,6 +16,7 @@ Bootstrap5(app)
 class Base(DeclarativeBase):
     pass
 
+# Create local db file
 app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///movies.db"
 # Create the extension
 db = SQLAlchemy(model_class=Base)
