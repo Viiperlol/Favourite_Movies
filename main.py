@@ -92,56 +92,58 @@ class AddMovie(FlaskForm):
 #     db.session.commit()
 
 
-@app.route("/", methods=["GET", "POST"])
+@app.route("/")
 def home():
-    result = db.session.execute(db.select(Movie))
-    all_movies = result.scalars().all()
+    result = db.session.execute(db.select(Movie).order_by(Movie.rating))
+    all_movies = result.scalars().all()  # convert ScalarResult to Python List
+
+    for i in range(len(all_movies)):
+        all_movies[i].ranking = len(all_movies) - i
+    db.session.commit()
+
     return render_template("index.html", movies=all_movies)
 
-
-@app.route("/edit", methods=["GET", "POST"])
-def edit():
-    form = RateMovieForm()
-    movie_id = request.args.get("id")
-    movie = db.get_or_404(Movie, movie_id)
-    if form.validate_on_submit():
-        movie.rating = float(form.new_rating.data)
-        if form.new_review.data == "":
-            movie.review = movie.review
-        else:
-            movie.review = form.new_review.data
-        db.session.commit()
-        return redirect(url_for('home'))
-    return render_template("edit.html", form=form)
-
-
-@app.route("/delete", methods=["GET", "POST"])
-def delete():
-    movie_id = int(request.args.get("id"))
-    movie_to_delete = db.get_or_404(Movie, movie_id)
-    if movie_to_delete:
-        db.session.delete(movie_to_delete)
-        db.session.commit()
-    return redirect(url_for('home'))
 
 @app.route("/add", methods=["GET", "POST"])
 def add():
     form = AddMovie()
     if form.validate_on_submit():
         movie_title = form.movie_title.data
-
-        response = requests.get(MOVIE_DB_SEARCH_URL, params={"api_key": MOVIE_API_KEY, "query": movie_title})
+        response = requests.get(MOVIE_DB_SEARCH_URL, params={
+                                "api_key": MOVIE_API_KEY, "query": movie_title})
         data = response.json()["results"]
         return render_template("select.html", options=data)
     return render_template("add.html", form=form)
 
+
+@app.route("/edit", methods=["GET", "POST"])
+def rate_movie():
+    form = RateMovieForm()
+    movie_id = request.args.get("id")
+    movie = db.get_or_404(Movie, movie_id)
+    if form.validate_on_submit():
+        movie.rating = float(form.new_rating.data)
+        movie.review = form.new_review.data
+        db.session.commit()
+        return redirect(url_for('home'))
+    return render_template("edit.html", movie=movie, form=form)
+
+
+@app.route("/delete")
+def delete_movie():
+    movie_id = request.args.get("id")
+    movie = db.get_or_404(Movie, movie_id)
+    db.session.delete(movie)
+    db.session.commit()
+    return redirect(url_for("home"))
 
 @app.route("/find")
 def find_movie():
     movie_api_id = request.args.get("id")
     if movie_api_id:
         movie_api_url = f"{MOVIE_DB_INFO_URL}/{movie_api_id}"
-        response = requests.get(movie_api_url, params={"api_key": MOVIE_API_KEY, "language": "en-US"})
+        response = requests.get(movie_api_url, params={
+                                "api_key": MOVIE_API_KEY, "language": "en-US"})
         data = response.json()
         new_movie = Movie(
             title=data["title"],
@@ -151,8 +153,6 @@ def find_movie():
         )
         db.session.add(new_movie)
         db.session.commit()
-
-        # Redirect to /edit route
         return redirect(url_for("rate_movie", id=new_movie.id))
 
 
