@@ -12,6 +12,16 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
 Bootstrap5(app)
 
+MOVIE_API_KEY = "02b2e2217debd7d354856c75efbec078"
+
+
+url = "https://api.themoviedb.org/3/search/movie?include_adult=false&language=en-US&page=1"
+
+headers = {"accept": "application/json",
+           "Authorization": "Bearer 02b2e2217debd7d354856c75efbec078"}
+
+response = requests.get(url, headers=headers)
+
 # CREATE DB
 class Base(DeclarativeBase):
     pass
@@ -43,7 +53,7 @@ class RateMovieForm(FlaskForm):
     submit = SubmitField("Submit", validators=[DataRequired()])
 
 class AddMovie(FlaskForm):
-    movie_title = StringField("Movie Title")
+    movie_title = StringField("Movie Title", validators=[DataRequired()])
     submit = SubmitField("Submit")
 
 # ----- SAMPLE DB DATA -----
@@ -120,7 +130,9 @@ def delete():
 @app.route("/add", methods=["GET", "POST"])
 def add():
     form = AddMovie()
-    return render_template("add.html", form=form)
+    movie_title = form.movie_title.data
+    print(movie_title)
+    return render_template("add.html", form=form, title=movie_title)
 
 
 if __name__ == '__main__':
