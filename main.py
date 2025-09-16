@@ -42,6 +42,10 @@ class RateMovieForm(FlaskForm):
     new_review = StringField("Your review")
     submit = SubmitField("Submit", validators=[DataRequired()])
 
+class AddMovie(FlaskForm):
+    movie_title = StringField("Movie Title")
+    submit = SubmitField("Submit")
+
 # ----- SAMPLE DB DATA -----
 # new_movie = Movie(
 #     title="Oppenheimer",
@@ -115,7 +119,8 @@ def delete():
 
 @app.route("/add", methods=["GET", "POST"])
 def add():
-    return render_template("add.html")
+    form = AddMovie()
+    return render_template("add.html", form=form)
 
 
 if __name__ == '__main__':
