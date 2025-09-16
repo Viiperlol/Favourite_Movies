@@ -17,9 +17,6 @@ MOVIE_DB_INFO_URL = "https://api.themoviedb.org/3/movie"
 MOVIE_DB_SEARCH_URL = "https://api.themoviedb.org/3/search/movie"
 MOVIE_DB_IMAGE_URL = "https://image.tmdb.org/t/p/w500"
 
-headers = {"accept": "application/json",
-           "Authorization": "Bearer 02b2e2217debd7d354856c75efbec078"}
-
 # CREATE DB
 class Base(DeclarativeBase):
     pass
@@ -34,7 +31,7 @@ db.init_app(app)
 # CREATE TABLE
 class Movie(db.Model):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    title: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
+    title: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
     year: Mapped[int] = mapped_column(Integer, nullable=False)
     description: Mapped[str] = mapped_column(String(500), nullable=False)
     rating: Mapped[float] = mapped_column(Float, nullable=True)
@@ -46,51 +43,13 @@ with app.app_context():
     db.create_all()
 
 class RateMovieForm(FlaskForm):
-    new_rating = StringField("Your rating out of 10", validators=[DataRequired()])
+    new_rating = StringField("Your rating out of 10")
     new_review = StringField("Your review")
-    submit = SubmitField("Submit", validators=[DataRequired()])
+    submit = SubmitField("Submit")
 
 class AddMovie(FlaskForm):
     movie_title = StringField("Movie Title", validators=[DataRequired()])
     submit = SubmitField("Submit")
-
-# ----- SAMPLE DB DATA -----
-# new_movie = Movie(
-#     title="Oppenheimer",
-#     year=2023,
-#     description="During World War II, Lt. Gen. Leslie Groves Jr. "
-#                 "appoints physicist J. Robert Oppenheimer to work "
-#                 "on the top-secret Manhattan Project. Oppenheimer "
-#                 "and a team of scientists spend years developing and "
-#                 "designing the atomic bomb. Their work comes to "
-#                 "fruition on July 16, 1945, as they witness the world's "
-#                 "first nuclear explosion, forever changing the course of history.",
-#     rating=8.3,
-#     ranking=1,
-#     review="One of the greatest biopic films of the century",
-#     img_url="https://www.hollywoodreporter.com/wp-content/uploads/2022/07/Oppenheimer-Movie-Poster-Universal-Publicity-EMBED-2022-.jpg"
-# )
-#
-# with app.app_context():
-#     db.session.add(new_movie)
-#     db.session.commit()
-#
-# second_movie = Movie(
-#     title="Interstellar",
-#     year=2014,
-#     description="When Earth becomes uninhabitable in the future, a farmer and ex-NASA pilot, "
-#                 "Joseph Cooper, is tasked to pilot a spacecraft, along with a team of researchers, "
-#                 "to find a new planet for humans.",
-#     rating=8.7,
-#     ranking=2,
-#     review="Beautifully explained the concept of time and space in an entertaining manner",
-#     img_url="https://s3.amazonaws.com/nightjarprod/content/uploads/sites/130/2021/08/19085635/gEU2QniE6E77NI6lCU6MxlNBvIx-scaled.jpg"
-# )
-#
-# with app.app_context():
-#     db.session.add(second_movie)
-#     db.session.commit()
-
 
 @app.route("/")
 def home():
@@ -117,7 +76,7 @@ def add():
 
 
 @app.route("/edit", methods=["GET", "POST"])
-def rate_movie():
+def edit():
     form = RateMovieForm()
     movie_id = request.args.get("id")
     movie = db.get_or_404(Movie, movie_id)
@@ -130,7 +89,7 @@ def rate_movie():
 
 
 @app.route("/delete")
-def delete_movie():
+def delete():
     movie_id = request.args.get("id")
     movie = db.get_or_404(Movie, movie_id)
     db.session.delete(movie)
@@ -153,7 +112,7 @@ def find_movie():
         )
         db.session.add(new_movie)
         db.session.commit()
-        return redirect(url_for("rate_movie", id=new_movie.id))
+        return redirect(url_for("edit", id=new_movie.id))
 
 
 if __name__ == '__main__':
