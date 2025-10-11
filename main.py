@@ -25,8 +25,10 @@ class Base(DeclarativeBase):
 
 # Create local db file
 app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///movies.db"
+
 # Create the extension
 db = SQLAlchemy(model_class=Base)
+
 # initialise the app with the extension
 db.init_app(app)
 
